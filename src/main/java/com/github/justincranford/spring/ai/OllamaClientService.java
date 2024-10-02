@@ -20,11 +20,6 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-/**
- * Examples:
- * <a href="https://github.com/spring-projects/spring-ai/blob/6fc76b7f9bfcb032ac721ac8eaef0dab4a9386e2/models/spring-ai-ollama/src/test/java/org/springframework/ai/ollama/OllamaChatModelIT.java#L204"/>
- * <a href="https://github.com/spring-projects/spring-ai/blob/6fc76b7f9bfcb032ac721ac8eaef0dab4a9386e2/models/spring-ai-openai/src/test/java/org/springframework/ai/openai/chat/proxy/OllamaWithOpenAiChatModelIT.java#L113"/>
- */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -41,6 +36,12 @@ public class OllamaClientService {
 	 */
 	private final ChatClient chatClient;
 
+	/**
+	 * Use ollamaChatModel in streaming mode. Use blocking to wait for all stream results. Piece the tokens together.
+	 * @param prompt List of messages, with optional OllamaOptions
+	 * @return The concatenated token contents.
+	 * @see <a href="https://github.com/spring-projects/spring-ai/blob/6fc76b7f9bfcb032ac721ac8eaef0dab4a9386e2/models/spring-ai-openai/src/test/java/org/springframework/ai/openai/chat/proxy/OllamaWithOpenAiChatModelIT.java#L113"/>
+	 */
 	public String prompt1(final Prompt prompt) {
 		final Flux<ChatResponse> chatResponseFlux = this.ollamaChatModel.stream(prompt);
 		log.info("Prompt:\n{}", prompt);
@@ -55,6 +56,12 @@ public class OllamaClientService {
 		return response;
 	}
 
+	/**
+	 * Use ollamaChatModel in streaming mode. Use async flux handlers or timeout. Piece the tokens together.
+	 * @param prompt List of messages, with optional OllamaOptions
+	 * @return The concatenated token contents.
+	 * @see <a href="https://github.com/spring-projects/spring-ai/blob/6fc76b7f9bfcb032ac721ac8eaef0dab4a9386e2/models/spring-ai-ollama/src/test/java/org/springframework/ai/ollama/OllamaChatModelIT.java#L204"/>
+	 */
 	public String prompt2(Prompt prompt) {
 		try {
 			log.info("Prompt:\n{}", prompt);
