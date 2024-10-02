@@ -34,7 +34,7 @@ public class OllamaClientService {
 	/**
 	 * @see OllamaClientServiceConfig#ollamaChatModel(OllamaApi)
 	 */
-	private final OllamaChatModel chatModel;
+	private final OllamaChatModel ollamaChatModel;
 
 	/**
 	 * @see OllamaClientServiceConfig#chatClient(OllamaChatModel)
@@ -42,7 +42,7 @@ public class OllamaClientService {
 	private final ChatClient chatClient;
 
 	public String prompt1(final Prompt prompt) {
-		final Flux<ChatResponse> chatResponseFlux = this.chatModel.stream(prompt);
+		final Flux<ChatResponse> chatResponseFlux = this.ollamaChatModel.stream(prompt);
 		log.info("Prompt:\n{}", prompt);
 		final List<ChatResponse> responses = requireNonNull(chatResponseFlux.collectList().block());
 		final String response = responses.stream()
