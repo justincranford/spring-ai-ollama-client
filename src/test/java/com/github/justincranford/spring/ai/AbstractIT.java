@@ -1,31 +1,29 @@
 package com.github.justincranford.spring.ai;
 
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.ollama.OllamaChatModel;
+import com.github.justincranford.spring.ai.config.OllamaClientServiceConfig;
+import com.github.justincranford.spring.ai.config.OllamaOptionsFactory;
+import lombok.Getter;
+import lombok.experimental.Accessors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import lombok.Getter;
-import lombok.experimental.Accessors;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.NONE, classes={ OllamaClientServiceConfig.class })
 @EnableAutoConfiguration
 @Getter
 @Accessors(fluent = true)
 @ActiveProfiles({"test"})
-@SuppressWarnings({"unused"})
 public abstract class AbstractIT {
-	@Autowired
-	private OllamaOptionsFactory ollamaOptionsFactory;
-
+	/**
+	 * @see OllamaClientService
+	 */
 	@Autowired
 	private OllamaClientService ollamaClientService;
 
+	/**
+	 * @see OllamaOptionsFactory#createInstance()
+	 */
 	@Autowired
-	private OllamaChatModel chatModel;
-
-	@Autowired
-	private ChatClient chatClient;
+	private OllamaOptionsFactory ollamaOptionsFactory;
 }

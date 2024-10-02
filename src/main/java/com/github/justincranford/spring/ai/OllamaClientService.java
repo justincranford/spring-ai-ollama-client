@@ -1,23 +1,24 @@
 package com.github.justincranford.spring.ai;
 
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
+import com.github.justincranford.spring.ai.config.OllamaClientServiceConfig;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
+import org.springframework.ai.ollama.api.OllamaApi;
 import org.springframework.stereotype.Component;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
+
 import static java.util.Objects.requireNonNull;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Examples:
@@ -28,7 +29,16 @@ import static java.util.Objects.requireNonNull;
 @RequiredArgsConstructor
 @Slf4j
 public class OllamaClientService {
+	private static final int STREAM_TIMEOUT_SEC = 30;
+
+	/**
+	 * @see OllamaClientServiceConfig#ollamaChatModel(OllamaApi)
+	 */
 	private final OllamaChatModel chatModel;
+
+	/**
+	 * @see OllamaClientServiceConfig#chatClient(OllamaChatModel)
+	 */
 	private final ChatClient chatClient;
 
 	public String prompt1(final Prompt prompt) {
@@ -48,7 +58,7 @@ public class OllamaClientService {
 	public String prompt2(Prompt prompt) {
 		try {
 			log.info("Prompt:\n{}", prompt);
-			final StringBuilder response = new StringBuilder();
+			final StringBuilder response = new StringBuilder(256);
 			final CountDownLatch latch = new CountDownLatch(1);
 			final Flux<ChatResponse> chatResponseFlux = this.chatClient.prompt(prompt).stream().chatResponse()
 					.doOnNext(chatResponse -> {
@@ -64,7 +74,7 @@ public class OllamaClientService {
 						latch.countDown();
 					});
 			chatResponseFlux.subscribe();
-			final boolean success = latch.await(20, TimeUnit.SECONDS);
+			final boolean success = latch.await(STREAM_TIMEOUT_SEC, SECONDS);
 			if (!success) {
 				log.error("Timed out:\n{}", response);
 				throw new RuntimeException("Timed out");
