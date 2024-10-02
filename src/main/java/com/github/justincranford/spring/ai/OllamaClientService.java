@@ -7,10 +7,8 @@ import java.util.stream.Collectors;
 
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
-import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.stereotype.Component;
@@ -33,11 +31,10 @@ public class OllamaClientService {
 	private final OllamaChatModel chatModel;
 	private final ChatClient chatClient;
 
-	public String prompt(final List<Message> messages) {
-		final Prompt request = new Prompt(messages);
-		log.info("Request:\n{}", request);
-		final Flux<ChatResponse> flux = this.chatModel.stream(request);
-		final List<ChatResponse> responses = requireNonNull(flux.collectList().block());
+	public String prompt1(final Prompt prompt) {
+		final Flux<ChatResponse> chatResponseFlux = this.chatModel.stream(prompt);
+		log.info("Prompt:\n{}", prompt);
+		final List<ChatResponse> responses = requireNonNull(chatResponseFlux.collectList().block());
 		final String response = responses.stream()
 				.map(ChatResponse::getResults)
 				.flatMap(List::stream)
@@ -48,25 +45,24 @@ public class OllamaClientService {
 		return response;
 	}
 
-	public String prompt(final List<Message> messages, final ChatOptions chatOptions) {
+	public String prompt2(Prompt prompt) {
 		try {
-			final Prompt request = (chatOptions == null) ? new Prompt(messages) : new Prompt(messages, chatOptions);
-	        log.info("Request:\n{}", request);
+			log.info("Prompt:\n{}", prompt);
 			final StringBuilder response = new StringBuilder();
 			final CountDownLatch latch = new CountDownLatch(1);
-			Flux<ChatResponse> chatResponseFlux = this.chatClient.prompt(request).stream().chatResponse()
-				.doOnNext(chatResponse -> {
-					final Generation result = chatResponse.getResult();
-					response.append(result.getOutput().getContent());
-					final String finishReason = result.getMetadata().getFinishReason();
-					if (finishReason != null) {
-						log.info("finishReason:\n{}", finishReason);
-					}
-				})
-				.doOnComplete(() -> {
-					log.info("Response:\n{}", response);
-					latch.countDown();
-				});
+			final Flux<ChatResponse> chatResponseFlux = this.chatClient.prompt(prompt).stream().chatResponse()
+					.doOnNext(chatResponse -> {
+						final Generation result = chatResponse.getResult();
+						response.append(result.getOutput().getContent());
+						final String finishReason = result.getMetadata().getFinishReason();
+						if (finishReason != null) {
+							log.info("finishReason:\n{}", finishReason);
+						}
+					})
+					.doOnComplete(() -> {
+						log.info("Response:\n{}", response);
+						latch.countDown();
+					});
 			chatResponseFlux.subscribe();
 			final boolean success = latch.await(20, TimeUnit.SECONDS);
 			if (!success) {
@@ -75,8 +71,8 @@ public class OllamaClientService {
 			}
 			return response.toString();
 		} catch(Exception e) {
-	        log.info("Exception: ", e);
-	        throw new RuntimeException(e);
+			log.info("Exception: ", e);
+			throw new RuntimeException(e);
 		}
 	}
 }
