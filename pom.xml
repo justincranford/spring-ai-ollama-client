@@ -4,6 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -31,7 +32,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <!--
         <repository>
             <id>spring-snapshots</id>
             <name>Spring Snapshots</name>
@@ -40,11 +40,11 @@
                 <enabled>false</enabled>
             </releases>
         </repository>
-        -->
     </repositories>
 
     <dependencyManagement>
         <dependencies>
+            <!-- https://mvnrepository.com/artifact/org.springframework.ai/spring-ai-bom -->
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
